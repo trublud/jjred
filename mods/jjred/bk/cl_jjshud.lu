@@ -1,0 +1,408 @@
+--  print("^2[JJsCoolHud] ^0" ..
+huddata = {
+    GetPlayerInvincible(PlayerId()),
+    '❤️: ' .. GetEntityHealth(PlayerPedId()), '💰 ', "👻", "🍀",
+    "👽", "✨", "🤮", "👎", "👍", "🧟‍♂️", "🤠", "💪"
+}
+local arr = {"standard", "standard_long", "advanced", "advanced_long"}
+local types = {"success", "warning", "danger"}
+local icons = {
+    "ABIGAIL", "ACTING_UP", "AGENT14", "ALL_PLAYERS_CONF", "AMANDA",
+    "AMMUNATION", "ANDREAS", "ANTONIA", "ARTHUR", "ASHLEY", "BANK_BOL",
+    "BANK_FLEECA", "BANK_MAZE", "BARRY", "BEVERLY", "BIKESITE", "BLANK_ENTRY",
+    "BLIMP", "BLIMP2", "BLOCKED", "BOATSITE", "BOATSITE2", "BROKEN_DOWN_GIRL",
+    "BRYONY", "BUGSTARS", "CALL911", "CARSITE", "CARSITE2", "CARSITE3",
+    "CARSITE4", "CASINO", "CASINO_MANAGER", "CASTRO", "CHAT_CALL", "CHEF",
+    "CHENG", "CHENGSR", "CHOP", "COMIC_STORE", "CRIS", "DAVE", "DEFAULT",
+    "DENISE", "DETONATEBOMB", "DETONATEPHONE", "DEVIN", "DIAL_A_SUB", "DOM",
+    "DOMESTIC_GIRL", "DREYFUSS", "DR_FRIEDLANDER", "ENGLISH_DAVE", "EPSILON",
+    "ESTATE_AGENT", "FACEBOOK", "FILMNOIR", "FLOYD", "FRANKLIN",
+    "FRANK_TREV_CONF", "GANGAPP", "GAYMILITARY", "HAO", "HITCHER_GIRL",
+    "HUMANDEFAULT", "HUNTER", "JIMMY", "JIMMY_BOSTON", "JOE", "JOSEF", "JOSH",
+    "LAMAR", "LAZLOW", "LAZLOW2", "LESTER", "LESTER_DEATHWISH",
+    "LEST_FRANK_CONF", "LEST_MIKE_CONF", "LIFEINVADER", "LJT", "LS_CUSTOMS",
+    "LS_TOURIST_BOARD", "MALC", "MANUEL", "MARNIE", "MARTIN", "MARY_ANN",
+    "MAUDE", "MECHANIC", "MICHAEL", "MIKE_FRANK_CONF", "MIKE_TREV_CONF",
+    "MILSITE", "MINOTAUR", "MOLLY", "MP_ARMY_CONTACT", "MP_BIKER_BOSS",
+    "MP_BIKER_MECHANIC", "MP_BRUCIE"
+}
+local open = 0
+
+local vuser = nil
+local vident = nil
+local vgroup = nil
+ruser = nil
+local VORPCore = {}
+if JJRedConfig.Plugins.redemrp then
+    print("^2[JJsCoolHud] ^0Enabled RedEMRP Features")
+    RegisterNetEvent("jjshud:testcmd")
+    AddEventHandler("jjshud:testcmd", function(user)
+       -- print("^2[JJsCoolHud] ^0 ".. source)
+        TriggerServerEvent('redemrp:getPlayer',  function( user)
+            if user ~= nil then
+                print("^2[JJsCoolHud] ^0 ".. source)
+                print("^2[JJsCoolHud] ^0 ".. user.getMoney())
+                ruser = user
+            end
+        end)
+        ruser = user
+
+        --   print("^2[JJsCoolHud] ^0" .. user.getName())
+    end)
+
+    RegisterNetEvent("redemrp:playerLoad")
+    AddEventHandler("redemrp:playerLoad", function(user)
+        print("^2[JJsCoolHud] ^0RedEmRP Player Loaded: " .. user.getName())
+        if user ~= nil then
+            ruser = user
+            print("^2[JJsCoolHud] ^0RedEmRP Player Loaded: " .. ruser)
+
+        end
+    end)
+
+    AddEventHandler('playerJoining', function()
+        TriggerServerEvent('redemrp:getPlayer', PlayerId(), function( user)
+            if user ~= nil then
+                print("^2[JJsCoolHud] ^0 ".. user.getMoney())
+                ruser = user
+            end
+        end)
+        TriggerServerEvent('redemrp:getPlayerFromId', source, function(user)
+            if user ~= nil then
+                print("^2[JJsCoolHud] ^0RedEmRP hooked successfully!")
+                ruser = user
+            end
+        end)
+    end)
+
+end
+if JJRedConfig.Plugins.VORP then
+    RegisterNetEvent('jjred:gotVorp')
+    AddEventHandler('jjred:gotVorp', function(vorp) VORPCore = vorp end)
+    TriggerServerEvent("jjred:getVorp")
+    if VORPCore ~= nil then
+        print("JJ loaded Vorp Core successfully!")
+
+        AddEventHandler("vorp:TipBottom", function(text, Interval)
+            TriggerEvent("jjred:notify", '🛃: ' .. text, 3000)
+        end)
+        AddEventHandler("vorp:TipRight", function(text, Interval)
+            TriggerEvent("jjred:notify", '🛃: ' .. text, 3000)
+        end)
+        AddEventHandler("vorp:Tip", function(text, Interval)
+            TriggerEvent("jjred:notify", text, Interval)
+        end)
+        AddEventHandler('vorp_skinPed:setSkinPed', function(clientId, model)
+            local _source = source
+            print('vorp_skinPed:setSkinPed')
+            while VORPCore.getCharacter == nil do Citizen.Wait(100) end
+            local user = VORPCore.getCharacter(_source)
+
+            local group = user.group
+            local ident = user.identifier
+            local model = args[1]
+
+            print(ident)
+
+        end)
+    end
+end
+
+ESX = nil
+if JJRedConfig.Plugins.ESX then
+
+    Citizen.CreateThread(function()
+        while ESX == nil do
+            TriggerEvent('esx:getSharedObject', function(obj)
+                ESX = obj
+            end)
+            Citizen.Wait(0)
+        end
+
+        esxnotification('JJs HUD', 'LOADED', 'Success')
+        TriggerServerEvent("esx_license:addLicense",
+                           GetPlayerServerId(PlayerId()), "Hunter", cb)
+
+        TriggerEvent("jjred:notify", "ESX-Integration Successful!", 3000)
+        function esxnotification(title, subject, msg)
+
+            local mugshot, mugshotStr = ESX.Game.GetPedMugshot(PlayerPedId())
+
+            ESX.ShowAdvancedNotification(title, subject, msg, mugshotStr, 1)
+            UnregisterPedheadshot(mugshot)
+
+        end
+    end)
+end
+function random_elem(tb)
+    local keys = {}
+    for k in pairs(tb) do table.insert(keys, k) end
+    return tb[keys[math.random(#keys)]]
+end
+if JJRedConfig.Plugins.showNotification then
+    msgm = false
+    AddEventHandler("ShowNotification", function(text)
+        if string.find(text, "🛃") then
+            text = string.gsub(text, "🛃", "")
+        end
+        if string.find(text, "🧟") then
+            text = string.gsub(text, "🧟", "")
+        end
+        if string.find(text, "!") then text = string.gsub(text, "!", "") end
+        while msgm do Citizen.Wait(5) end
+        Citizen.CreateThread(function()
+            msgm = true
+            SendNUIMessage({action = "notify", data = text .. '🧟 '})
+            Citizen.Wait(3500)
+            SendNUIMessage({action = "hidenotify"})
+            Citizen.Wait(500)
+            msgm = false
+
+        end)
+    end)
+    AddEventHandler("showNotification", function(text)
+        if string.find(text, "🛃") then
+            text = string.gsub(text, "🛃", "")
+        end
+        if string.find(text, "🧟") then
+            text = string.gsub(text, "🧟", "")
+        end
+        if string.find(text, "!") then text = string.gsub(text, "!", "") end
+        while msgm do Citizen.Wait(5) end
+        Citizen.CreateThread(function()
+            msgm = true
+            SendNUIMessage({action = "notify", data = text .. '🧟 '})
+            Citizen.Wait(3500)
+            SendNUIMessage({action = "hidenotify"})
+            Citizen.Wait(500)
+            msgm = false
+
+        end)
+    end)
+
+end
+if JJRedConfig.Plugins.redemrp then
+    TriggerEvent('redem_roleplay:NotifyLeft', "first text", "second text",
+                 random_elem(icons), "tick", 8000)
+
+    TriggerEvent("redem_roleplay:Tip", 'hi', 'hi', '🛃: xoxo', 3000)
+    AddEventHandler("redemrp_notification:start", function(text, Interval)
+        TriggerEvent("jjred:notify", '🛃: ' .. text, 3000)
+    end)
+
+    AddEventHandler("redem_roleplay:Tip", function(text, Interval)
+        TriggerEvent("jjred:notify", '🛃: ' .. text, 3000)
+    end)
+end
+if JJRedConfig.Plugins.FeedM then
+    AddEventHandler("FeedM:showAdvancedNotification",
+                    function(Title, Subject, Message, Icon, Interval, Type)
+        --  ShowAdvancedNotification(Title, Subject, Message, Icon, Interval, Type)
+        TriggerEvent("jjred:notify", '🛃: ' .. Message, 3000)
+    end)
+end
+AddEventHandler("FeedM:showNotification", function(Message, Interval, Type)
+    TriggerEvent("jjred:notify", '🛃: ' .. ' :' .. Message, 3000)
+    --  ShowNotification(Message, Interval, Type)
+end)
+
+RegisterNetEvent('jjred:notify')
+AddEventHandler('jjred:notify', function(msg, mtime)
+    if mtime == nil or mtime < 1000 then mtime = 4000 end
+    if JJRedConfig.Plugins.ESX and ESX ~= nil then
+        esxnotification('JJsNotify', 'Alert', msg)
+    end
+    if string.find(msg, "🛃") then
+    else
+        if string.find(msg, "!") then msg = string.gsub(msg, "!", "") end
+        if JJRedConfig.Plugins.showNotification then
+            -- msg="🧟 " .. msg
+            TriggerEvent("ShowNotification", tostring(msg))
+            TriggerEvent("showNotification", tostring(msg))
+        end
+    end
+
+    if string.find(msg, "!") then msg = string.gsub(msg, "!", "") end
+    if JJRedConfig.Plugins.showNotification then
+        -- msg="🧟 " .. msg
+        TriggerEvent("ShowNotification", "🧟 " .. tostring(msg))
+        TriggerEvent("showNotification", "🧟 " .. tostring(msg))
+    end
+    CreateThread(function()
+
+        SendNUIMessage({action = "notify", data = msg})
+        Citizen.Wait(mtime)
+        SendNUIMessage({action = "hidenotify"})
+    end)
+end)
+RegisterNetEvent('jjred:addmstatshud')
+AddEventHandler('jjred:addmstatshud', function(data)
+    SendNUIMessage({action = "addmstatshud", data = data})
+end)
+RegisterNetEvent('jjred:ruser')
+AddEventHandler('jjred:ruser', function(user) ruser = user end)
+RegisterNetEvent('jjred:updateme')
+AddEventHandler('jjred:updateme', function(data)
+    SendNUIMessage({action = "paddme", data = data})
+end)
+RegisterNetEvent('jjred:showhud')
+AddEventHandler('jjred:showhud', function(hudx)
+    SendNUIMessage({action = "showhud", hudx = hudx})
+end)
+RegisterNetEvent('jjred:showmehud')
+AddEventHandler('jjred:showmehud', function(hudx)
+    SendNUIMessage({action = "showmehud", hudx = hudx})
+end)
+
+RegisterNetEvent('jjred:update')
+AddEventHandler('jjred:update', function(data)
+    SendNUIMessage({action = "update", data = data})
+end)
+RegisterNetEvent('jjred:hidemehud')
+AddEventHandler('jjred:hidemehud',
+                function() SendNUIMessage({action = "hidemehud"}) end)
+RegisterNetEvent('jjred:closehud')
+AddEventHandler('jjred:closehud',
+                function() SendNUIMessage({action = "hidehud"}) end)
+RegisterNetEvent('jjred:open')
+AddEventHandler('jjred:open', function()
+    SendNUIMessage({action = "open"})
+    SetNuiFocus(true, true)
+    open = 1
+end)
+
+RegisterNetEvent('jjred:sendError')
+AddEventHandler('jjred:sendError', function(text)
+    SendNUIMessage({action = "error", errorText = text})
+end)
+
+RegisterNUICallback("close", function(data, cb)
+    SetNuiFocus(false, false)
+    SendNUIMessage({action = "hidenotify"})
+    SendNUIMessage({action = "hidehud"})
+    open = 0
+    cb('ok')
+
+end)
+
+RegisterNUICallback("action", function(data, cb)
+    TriggerServerEvent('jjred:action', data.data)
+    cb('ok')
+end)
+
+RegisterNUICallback("ToggleOpenPlayerlist", function(data, cb)
+    if not data.toggleplayer then
+        TriggerServerEvent("jjred:add")
+
+    else
+        TriggerServerEvent("jjred:remove")
+    end
+    cb('ok')
+end)
+RegisterNUICallback("ToggleOpenUser", function(data, cb)
+    if not data.toggleuser then
+        TriggerServerEvent("jjred:addme")
+
+    else
+        TriggerServerEvent("jjred:remove")
+    end
+    cb('ok')
+end)
+
+function IsOnline(target)
+    print(json.encode(GetActivePlayers()))
+    for v, i in ipairs(GetActivePlayers()) do
+        if (v == target) then return true end
+    end
+    return false
+end
+TriggerServerEvent('redemrp:getPlayerFromId', PlayerId(), function(user)
+    if user ~= nil then
+        print("^2[JJsCoolHud] ^0RedEmRP hooked successfully!")
+        ruser = user
+    end
+end)
+
+RegisterNetEvent('jjred:updatestatshud')
+AddEventHandler('jjred:updatestatshud', function(slot,data)
+    huddata[slot]=data
+end)
+function updatehud(ruser)
+    if ruser ~= nil then 
+        TriggerServerEvent("jjred:statshud",  GetPlayerInvincible(PlayerId()),
+        '❤️: ' .. GetEntityHealth(PlayerPedId()), huddata[3] ,
+                           huddata[4], huddata[5], huddata[6], huddata[7],
+                           huddata[8], huddata[9], huddata[10], huddata[11],
+                           huddata[12], huddata[13])
+    else
+    TriggerServerEvent("jjred:statshud",  GetPlayerInvincible(PlayerId()),
+    '❤️: ' .. GetEntityHealth(PlayerPedId()), huddata[3],
+                       huddata[4], huddata[5], huddata[6], huddata[7],
+                       huddata[8], huddata[9], huddata[10], huddata[11],
+                       huddata[12], huddata[13])
+    end
+end
+CreateThread(function()
+    TriggerServerEvent('redemrp:getPlayer',  function(user)
+        if user ~= nil then
+            print("^2[JJsCoolHud] ^0 ".. user.getMoney())
+            ruser = user
+        end
+    end)
+    while true do
+        Wait(0)
+if ruser ~= nil then 
+        updatehud()
+else
+    updatehud()
+
+end
+        if open == 0 then
+            i=1
+            if IsControlJustPressed(0, JJRedConfig.Keys.SettingsKey) then
+                i= i+20
+                TriggerEvent("jjred:notify", "Move me around!", 30000)
+                huddata[3] =  huddata[3] .. i
+                updatehud()
+                --TriggerEvent("jjred:showhud")
+                TriggerEvent("jjred:open")
+              --  open = 1
+
+            end
+        end
+    end
+end)
+
+AddEventHandler("playerSpawned", function(spawn)
+    local _source = source
+    if JJRedConfig.Plugins.VORP then
+        local _source = source
+        vuser = VORPCore.getCharacter(_source)
+        vgroup = user.group
+        vident = user.identifier
+        local model = args[1]
+        print(ident)
+    end
+    TriggerServerEvent('redemrp:getPlayerFromId', _source, function(user)
+        if user ~= nil then
+            print("^2[JJsCoolHud] ^0RedEmRP hooked successfully!")
+            ruser = user
+        end
+    end)
+end)
+
+AddEventHandler('onResourceStop', function(name)
+    if name == GetCurrentResourceName() then
+        SetNuiFocus(false, false)
+        SendNUIMessage({action = "hidenotify"})
+        SendNUIMessage({action = "hidehud"})
+        open = 0
+    end
+end)
+
+RegisterNUICallback("closedata", function(data, cb) open = 0 end)
+
+---- CreateThread(function()
+-- RequestModel('s_m_y_cop_01')
+-- end)
+
